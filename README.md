@@ -54,13 +54,14 @@ You will see your Client ID and Client Secret. Copy these.
 3. Prepare Files for Deployment
 Ensure the following files are in the root of your project directory:
 
-bot.py: Your main bot code (no changes needed from the last version I provided, as FFMPEG_PATH is no longer directly used).
+bot.py: The updated Python code for your bot (provided above, now using imageio-ffmpeg).
 
-requirements.txt:
+requirements.txt: (UPDATED - added imageio-ffmpeg)
 
 discord.py[voice]
 spotipy
 yt-dlp
+imageio-ffmpeg
 
 Procfile:
 
@@ -70,15 +71,10 @@ runtime.txt: (Recommended for explicit Python version)
 
 python-3.9.18
 
-nixpacks.toml: (UPDATED - with custom build phase for FFmpeg)
+nixpacks.toml: (UPDATED - now empty as imageio-ffmpeg handles FFmpeg)
 
-[phases.setup]
-apt_packages = ["ffmpeg"]
-
-[phases.build]
-# Ensure ffmpeg is in a known PATH location for the application
-# This command tries to find ffmpeg and symlink it to /usr/local/bin
-cmds = ["find / -name ffmpeg -type f -executable -print -quit | xargs -r -I {} ln -sf {} /usr/local/bin/ffmpeg || echo 'ffmpeg not found for symlinking, relying on default PATH'"]
+# No special Nixpacks configuration needed for FFmpeg,
+# as imageio-ffmpeg handles it directly within Python dependencies.
 
 Note: The start.sh file is no longer needed and should be removed from your repository. Also, you no longer need to set FFMPEG_PATH as an environment variable in Railway.
 
@@ -109,7 +105,7 @@ SPOTIPY_CLIENT_ID: Your Spotify API Client ID.
 
 SPOTIPY_CLIENT_SECRET: Your Spotify API Client Secret.
 
-Important: You no longer need to set FFMPEG_PATH as an environment variable.
+Important: You no longer need to set FFMPEG_PATH as an environment variable in Railway.
 
 Railway will automatically redeploy your application after you add these variables.
 
