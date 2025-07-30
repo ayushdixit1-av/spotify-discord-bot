@@ -54,7 +54,7 @@ You will see your Client ID and Client Secret. Copy these.
 3. Prepare Files for Deployment
 Ensure the following files are in the root of your project directory:
 
-bot.py: The updated Python code for your bot (provided above, now using FFMPEG_PATH environment variable).
+bot.py: Your main bot code (no changes needed from the last version I provided, as FFMPEG_PATH is no longer directly used).
 
 requirements.txt:
 
@@ -70,12 +70,17 @@ runtime.txt: (Recommended for explicit Python version)
 
 python-3.9.18
 
-nixpacks.toml:
+nixpacks.toml: (UPDATED - with custom build phase for FFmpeg)
 
 [phases.setup]
 apt_packages = ["ffmpeg"]
 
-Note: The start.sh file is no longer needed and should be removed from your repository.
+[phases.build]
+# Ensure ffmpeg is in a known PATH location for the application
+# This command tries to find ffmpeg and symlink it to /usr/local/bin
+cmds = ["find / -name ffmpeg -type f -executable -print -quit | xargs -r -I {} ln -sf {} /usr/local/bin/ffmpeg || echo 'ffmpeg not found for symlinking, relying on default PATH'"]
+
+Note: The start.sh file is no longer needed and should be removed from your repository. Also, you no longer need to set FFMPEG_PATH as an environment variable in Railway.
 
 4. Deploy on Railway
 Create a Git Repository: Initialize a Git repository in your project folder and push all the above files to a GitHub repository.
@@ -104,7 +109,7 @@ SPOTIPY_CLIENT_ID: Your Spotify API Client ID.
 
 SPOTIPY_CLIENT_SECRET: Your Spotify API Client Secret.
 
-FFMPEG_PATH: /usr/bin/ffmpeg (NEW variable for FFmpeg location)
+Important: You no longer need to set FFMPEG_PATH as an environment variable.
 
 Railway will automatically redeploy your application after you add these variables.
 
