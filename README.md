@@ -109,3 +109,14 @@ Example: !suggest Hotel California
 Example: !play Despacito
 
 !stop: Stop the current song and disconnect the bot from the voice channel.
+
+Troubleshooting
+If you encounter issues during deployment, especially "Nixpacks was unable to generate a build plan for this app," consider the following:
+
+Verify File Presence: Ensure bot.py, requirements.txt, and Procfile are all present in the root directory of your GitHub repository.
+
+Procfile Line Endings: This is a very common issue. The Procfile must use Unix-style line endings (LF), not Windows-style (CRLF). If you created the Procfile on Windows, open it in a text editor (like VS Code, Notepad++, Sublime Text) and convert its line endings to LF, then save and push the change to GitHub.
+
+Empty requirements.txt: Ensure your requirements.txt file is not empty and correctly lists all dependencies.
+
+Typos: Double-check for any typos in filenames (bot.py, requirements.txt, Procfile) or within the Procfile content (worker: python bot.py).
