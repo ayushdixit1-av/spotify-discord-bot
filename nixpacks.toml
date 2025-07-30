@@ -1,7 +1,2 @@
-[phases.setup]
-apt_packages = ["ffmpeg"]
-
-[phases.build]
-# Ensure ffmpeg is in a known PATH location for the application
-# This command tries to find ffmpeg and symlink it to /usr/local/bin
-cmds = ["find / -name ffmpeg -type f -executable -print -quit | xargs -r -I {} ln -sf {} /usr/local/bin/ffmpeg || echo 'ffmpeg not found for symlinking, relying on default PATH'"]
+# No special Nixpacks configuration needed for FFmpeg,
+# as imageio-ffmpeg handles it directly within Python dependencies.
