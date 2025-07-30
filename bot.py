@@ -6,12 +6,18 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import asyncio
 import yt_dlp # For fetching audio from YouTube
 import re # For regular expressions to check URLs
+import imageio_ffmpeg as ffmpeg # Import imageio_ffmpeg
 
 # --- Configuration ---
 # Get environment variables for sensitive information
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
+
+# Get the FFmpeg executable path from imageio_ffmpeg
+FFMPEG_EXECUTABLE_PATH = ffmpeg.get_ffmpeg_exe()
+print(f"FFmpeg executable path found by imageio-ffmpeg: {FFMPEG_EXECUTABLE_PATH}")
+
 
 # Intents are required for your bot to receive certain events from Discord.
 # MESSAGE_CONTENT is required to read message content.
@@ -87,8 +93,8 @@ async def play_audio_from_youtube(interaction: discord.Interaction, source_query
         # Get voice client from interaction's guild
         voice_client = interaction.guild.voice_client
         if voice_client:
-            # discord.py will now use the FFMPEG_PATH environment variable
-            voice_client.play(discord.FFmpegOpusAudio(audio_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
+            # Use the FFMPEG_EXECUTABLE_PATH obtained from imageio_ffmpeg
+            voice_client.play(discord.FFmpegOpusAudio(audio_url, executable=FFMPEG_EXECUTABLE_PATH, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
             await interaction.followup.send(f"Now playing: **{title}** by **{uploader}**")
         else:
             await interaction.followup.send("I am not in a voice channel. Please use `/play` while I am connected.")
