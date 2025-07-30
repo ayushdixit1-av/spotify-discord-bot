@@ -1,4 +1,4 @@
 discord.py[voice]
 spotipy
 yt-dlp
-imageio-ffmpeg # NEW: Added for FFmpeg bundling
+imageio-ffmpeg
