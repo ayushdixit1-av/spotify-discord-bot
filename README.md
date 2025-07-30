@@ -156,3 +156,17 @@ Double-check for any typos in filenames or content.
 Clean Redeploy:
 
 Consider deleting the Railway service and redeploying from scratch if persistent issues occur.
+
+No Voice Output / Audio Issues:
+
+Verify discord.py[voice] Installation: Even with imageio-ffmpeg, discord.py relies on specific underlying libraries for voice (like PyNaCl and opus). The [voice] extra in requirements.txt (discord.py[voice]) is supposed to handle this.
+
+Check Railway Build Logs (again): Look very closely at the install phase logs on Railway. Ensure discord.py[voice] installs successfully without any warnings or errors related to PyNaCl or opus. Sometimes, even if the build passes, a warning might indicate a voice dependency didn't fully resolve.
+
+Check Railway Runtime Logs: After the bot deploys and starts, go to the "Logs" tab for your service on Railway. When you try to play a song, look for any errors or warnings that appear. These runtime errors are crucial for diagnosing audio playback problems.
+
+Bot Permissions in Discord: Double-check that your bot has the "Connect" and "Speak" permissions in the specific voice channel you are trying to use it in. Even if it joins, lacking "Speak" permission will prevent audio.
+
+Discord Server Region/Voice Settings: While rare, ensure there are no unusual voice region settings on your Discord server that might interfere with bot audio.
+
+Audio Source Compatibility: Although yt-dlp is robust, very occasionally, a specific YouTube video's audio format might cause issues. Try playing different songs to see if it's a consistent problem or isolated to certain tracks.
