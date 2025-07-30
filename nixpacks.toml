@@ -1,2 +1,3 @@
-# No special Nixpacks configuration needed for FFmpeg,
-# as imageio-ffmpeg handles it directly within Python dependencies.
+[phases.setup]
+# Use apt_packages to install ffmpeg directly
+apt_packages = ["ffmpeg"]
