@@ -54,7 +54,7 @@ You will see your Client ID and Client Secret. Copy these.
 3. Prepare Files for Deployment
 Ensure the following files are in the root of your project directory:
 
-bot.py: The updated Python code for your bot (provided above, now with explicit FFmpeg path).
+bot.py: The updated Python code for your bot (provided above, now using FFMPEG_PATH environment variable).
 
 requirements.txt:
 
@@ -62,7 +62,7 @@ discord.py[voice]
 spotipy
 yt-dlp
 
-Procfile: (UPDATED - simplified)
+Procfile:
 
 start: python bot.py
 
@@ -70,7 +70,7 @@ runtime.txt: (Recommended for explicit Python version)
 
 python-3.9.18
 
-nixpacks.toml: (UPDATED - simplified)
+nixpacks.toml:
 
 [phases.setup]
 apt_packages = ["ffmpeg"]
@@ -103,6 +103,8 @@ DISCORD_BOT_TOKEN: Your Discord bot token.
 SPOTIPY_CLIENT_ID: Your Spotify API Client ID.
 
 SPOTIPY_CLIENT_SECRET: Your Spotify API Client Secret.
+
+FFMPEG_PATH: /usr/bin/ffmpeg (NEW variable for FFmpeg location)
 
 Railway will automatically redeploy your application after you add these variables.
 
