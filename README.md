@@ -4,7 +4,7 @@ A Discord bot that can suggest songs from Spotify and play music from YouTube in
 Features
 Song Suggestions: Get Spotify song suggestions by name using a slash command.
 
-Interactive Play Music: Search for music, get suggestions, and select a song to play in a Discord voice channel using a slash command.
+Play Music: Play music in a Discord voice channel by providing a song name, Spotify track URL, or YouTube URL.
 
 Stop Music: Stop currently playing music and disconnect the bot using a slash command.
 
@@ -54,7 +54,7 @@ You will see your Client ID and Client Secret. Copy these.
 3. Prepare Files for Deployment
 Ensure the following files are in the root of your project directory:
 
-bot.py: The updated Python code for your bot (provided above).
+bot.py: Your main bot code (no changes needed from the last version I provided).
 
 requirements.txt:
 
@@ -62,13 +62,31 @@ discord.py[voice]
 spotipy
 yt-dlp
 
-Procfile:
+Procfile: (UPDATED)
 
-start: python bot.py
+start: bash start.sh
 
 runtime.txt: (Recommended for explicit Python version)
 
 python-3.9.18
+
+nixpacks.toml: (UPDATED)
+
+[phases.setup]
+apt_packages = ["ffmpeg"]
+
+start.sh: (NEW FILE)
+
+#!/bin/bash
+
+# Explicitly add common ffmpeg installation paths to the PATH
+# This ensures discord.py can find the ffmpeg executable
+export PATH=$PATH:/usr/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin
+
+# Execute the Python bot
+python bot.py
+
+Important: After creating start.sh, you might need to make it executable. If you're using Git Bash or a Linux/macOS terminal, run chmod +x start.sh before committing. If you're on Windows and using a GUI, ensure your Git client is configured to handle executable permissions correctly, or simply ensure the file is created with Unix line endings.
 
 4. Deploy on Railway
 Create a Git Repository: Initialize a Git repository in your project folder and push all the above files to a GitHub repository.
@@ -99,8 +117,6 @@ SPOTIPY_CLIENT_SECRET: Your Spotify API Client Secret.
 
 Railway will automatically redeploy your application after you add these variables.
 
-Note on FFmpeg: Railway's build environment typically includes ffmpeg. If you encounter issues with audio playback, ensure ffmpeg is properly installed and accessible within the Railway container.
-
 Bot Commands (Slash Commands)
 Once the bot is online in your Discord server:
 
@@ -108,9 +124,13 @@ Once the bot is online in your Discord server:
 
 Example: Type /suggest and then enter Hotel California in the song_name field.
 
-/play <search_query>: Search for songs, get suggestions, and then reply with the number of the song you want to play to play it in your voice channel.
+/play <query>: Plays a song. You can provide a song name, a Spotify track URL, or a YouTube URL.
 
-Example: Type /play and then enter Despacito in the search_query field.
+Example (Song Name): Type /play and then enter Despacito in the query field.
+
+Example (YouTube URL): Type /play and then enter a YouTube video URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ).
+
+Example (Spotify Track URL): Type /play and then enter a Spotify track URL (e.g., https://open.spotify.com/track/7qiZfU4dY1lWllzX7K8Wp6).
 
 /stop: Stop the current song and disconnect the bot from the voice channel.
 
@@ -119,15 +139,19 @@ If you encounter issues during deployment, especially "Nixpacks was unable to ge
 
 Verify File Presence and Location:
 
-Ensure bot.py, requirements.txt, Procfile, and runtime.txt are all present in the root directory of your GitHub repository.
+Ensure bot.py, requirements.txt, Procfile, runtime.txt, nixpacks.toml, and start.sh are all present in the root directory of your GitHub repository.
 
 Correct Filenames:
 
-Ensure requirements.txt (with 's') and Procfile (capital 'P') are spelled correctly.
+Ensure requirements.txt (with 's'), Procfile (capital 'P'), nixpacks.toml, and start.sh are spelled correctly.
 
-Procfile Line Endings (CRITICAL):
+Procfile and start.sh Line Endings (CRITICAL):
 
-The Procfile must use Unix-style line endings (LF), not Windows-style (CRLF). Use a code editor (VS Code, Notepad++, Sublime Text) to convert and save.
+These files must use Unix-style line endings (LF), not Windows-style (CRLF). Use a code editor (VS Code, Notepad++, Sublime Text) to convert and save.
+
+start.sh Executable Permissions:
+
+Ensure start.sh has executable permissions. If you're on Linux/macOS or using Git Bash, run chmod +x start.sh before committing.
 
 Empty requirements.txt:
 
