@@ -87,8 +87,8 @@ async def play_audio_from_youtube(interaction: discord.Interaction, source_query
         # Get voice client from interaction's guild
         voice_client = interaction.guild.voice_client
         if voice_client:
-            # Explicitly provide the path to the ffmpeg executable
-            voice_client.play(discord.FFmpegOpusAudio(audio_url, executable='/usr/bin/ffmpeg', before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
+            # discord.py will now use the FFMPEG_PATH environment variable
+            voice_client.play(discord.FFmpegOpusAudio(audio_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
             await interaction.followup.send(f"Now playing: **{title}** by **{uploader}**")
         else:
             await interaction.followup.send("I am not in a voice channel. Please use `/play` while I am connected.")
