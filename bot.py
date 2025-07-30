@@ -87,7 +87,8 @@ async def play_audio_from_youtube(interaction: discord.Interaction, source_query
         # Get voice client from interaction's guild
         voice_client = interaction.guild.voice_client
         if voice_client:
-            voice_client.play(discord.FFmpegOpusAudio(audio_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
+            # Explicitly provide the path to the ffmpeg executable
+            voice_client.play(discord.FFmpegOpusAudio(audio_url, executable='/usr/bin/ffmpeg', before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
             await interaction.followup.send(f"Now playing: **{title}** by **{uploader}**")
         else:
             await interaction.followup.send("I am not in a voice channel. Please use `/play` while I am connected.")
@@ -211,7 +212,7 @@ async def play_song(interaction: discord.Interaction, query: str):
 
 
 @bot.tree.command(name="stop", description="Stops the current song and disconnects the bot.")
-async def stop_playing(interaction: discord.Interaction):
+async def stop_playing(interaction: discord.Interaction, ):
     """
     Stops the currently playing song and disconnects the bot from the voice channel.
     Usage: /stop
