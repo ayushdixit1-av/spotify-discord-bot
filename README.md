@@ -54,14 +54,13 @@ You will see your Client ID and Client Secret. Copy these.
 3. Prepare Files for Deployment
 Ensure the following files are in the root of your project directory:
 
-bot.py: The updated Python code for your bot (provided above, now using imageio-ffmpeg).
+bot.py: The updated Python code for your bot (provided above, now relying on FFMPEG_PATH environment variable).
 
-requirements.txt: (UPDATED - added imageio-ffmpeg)
+requirements.txt: (UPDATED - imageio-ffmpeg removed)
 
 discord.py[voice]
 spotipy
 yt-dlp
-imageio-ffmpeg
 
 Procfile:
 
@@ -71,12 +70,12 @@ runtime.txt: (Recommended for explicit Python version)
 
 python-3.9.18
 
-nixpacks.toml: (UPDATED - now empty as imageio-ffmpeg handles FFmpeg)
+nixpacks.toml: (UPDATED - simplified to only install ffmpeg via apt)
 
-# No special Nixpacks configuration needed for FFmpeg,
-# as imageio-ffmpeg handles it directly within Python dependencies.
+[phases.setup]
+apt_packages = ["ffmpeg"]
 
-Note: The start.sh file is no longer needed and should be removed from your repository. Also, you no longer need to set FFMPEG_PATH as an environment variable in Railway.
+Note: The start.sh file is no longer needed and should be removed from your repository.
 
 4. Deploy on Railway
 Create a Git Repository: Initialize a Git repository in your project folder and push all the above files to a GitHub repository.
@@ -105,7 +104,7 @@ SPOTIPY_CLIENT_ID: Your Spotify API Client ID.
 
 SPOTIPY_CLIENT_SECRET: Your Spotify API Client Secret.
 
-Important: You no longer need to set FFMPEG_PATH as an environment variable in Railway.
+FFMPEG_PATH: /usr/bin/ffmpeg (This environment variable tells discord.py where to find FFmpeg after it's installed by apt)
 
 Railway will automatically redeploy your application after you add these variables.
 
@@ -159,10 +158,6 @@ Consider deleting the Railway service and redeploying from scratch if persistent
 
 No Voice Output / Audio Issues:
 
-Verify discord.py[voice] Installation: Even with imageio-ffmpeg, discord.py relies on specific underlying libraries for voice (like PyNaCl and opus). The [voice] extra in requirements.txt (discord.py[voice]) is supposed to handle this.
-
-Check Railway Build Logs (again): Look very closely at the install phase logs on Railway. Ensure discord.py[voice] installs successfully without any warnings or errors related to PyNaCl or opus. Sometimes, even if the build passes, a warning might indicate a voice dependency didn't fully resolve.
-
 Check Railway Runtime Logs: After the bot deploys and starts, go to the "Logs" tab for your service on Railway. When you try to play a song, look for any errors or warnings that appear. These runtime errors are crucial for diagnosing audio playback problems.
 
 Bot Permissions in Discord: Double-check that your bot has the "Connect" and "Speak" permissions in the specific voice channel you are trying to use it in. Even if it joins, lacking "Speak" permission will prevent audio.
@@ -170,3 +165,5 @@ Bot Permissions in Discord: Double-check that your bot has the "Connect" and "Sp
 Discord Server Region/Voice Settings: While rare, ensure there are no unusual voice region settings on your Discord server that might interfere with bot audio.
 
 Audio Source Compatibility: Although yt-dlp is robust, very occasionally, a specific YouTube video's audio format might cause issues. Try playing different songs to see if it's a consistent problem or isolated to certain tracks.
+
+Opus Library: discord.py relies on the Opus audio codec for voice. While discord.py[voice] attempts to install necessary bindings (PyNaCl), sometimes the underlying Opus library might be missing or incompatible. If the Railway logs show issues related to opus or PyNaCl during installation, that's a strong indicator. This is why we are now relying on apt_packages = ["ffmpeg"] and FFMPEG_PATH.
