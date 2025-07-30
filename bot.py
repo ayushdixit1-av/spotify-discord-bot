@@ -6,7 +6,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import asyncio
 import yt_dlp # For fetching audio from YouTube
 import re # For regular expressions to check URLs
-import imageio_ffmpeg as ffmpeg # Import imageio_ffmpeg
+# import imageio_ffmpeg as ffmpeg # Removed imageio_ffmpeg
 
 # --- Configuration ---
 # Get environment variables for sensitive information
@@ -14,9 +14,9 @@ DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
-# Get the FFmpeg executable path from imageio_ffmpeg
-FFMPEG_EXECUTABLE_PATH = ffmpeg.get_ffmpeg_exe()
-print(f"FFmpeg executable path found by imageio-ffmpeg: {FFMPEG_EXECUTABLE_PATH}")
+# FFMPEG_EXECUTABLE_PATH will now be read from environment variable by discord.py
+# FFMPEG_EXECUTABLE_PATH = ffmpeg.get_ffmpeg_exe() # Removed
+# print(f"FFmpeg executable path found by imageio-ffmpeg: {FFMPEG_EXECUTABLE_PATH}") # Removed
 
 
 # Intents are required for your bot to receive certain events from Discord.
@@ -93,15 +93,17 @@ async def play_audio_from_youtube(interaction: discord.Interaction, source_query
         # Get voice client from interaction's guild
         voice_client = interaction.guild.voice_client
         if voice_client:
-            # Use the FFMPEG_EXECUTABLE_PATH obtained from imageio_ffmpeg
-            voice_client.play(discord.FFmpegOpusAudio(audio_url, executable=FFMPEG_EXECUTABLE_PATH, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
+            # discord.py will now use the FFMPEG_PATH environment variable
+            # Removed executable=FFMPEG_EXECUTABLE_PATH
+            voice_client.play(discord.FFmpegOpusAudio(audio_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'))
             await interaction.followup.send(f"Now playing: **{title}** by **{uploader}**")
         else:
             await interaction.followup.send("I am not in a voice channel. Please use `/play` while I am connected.")
 
 
     except Exception as e:
-        await interaction.followup.send(f"An error occurred while trying to play the song: {e}. Make sure `ffmpeg` is installed and accessible.")
+        # Changed error message to be more generic as ffmpeg might be found but still fail
+        await interaction.followup.send(f"An error occurred while trying to play the song: {e}. Please check bot logs for details.")
         print(f"Error playing song: {e}")
 
 # --- Bot Commands (Slash Commands) ---
