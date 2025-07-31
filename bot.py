@@ -11,70 +11,68 @@ from discord.ui import View, ChannelSelect, Button
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
 
-# Load tokens from .env
+# Load environment variables
 load_dotenv()
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
 SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
 
-# Setup
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
+
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
     client_id=SPOTIPY_CLIENT_ID,
     client_secret=SPOTIPY_CLIENT_SECRET
 ))
 
-# Configs
 WELCOME_CONFIG = {"channel_id": None, "message_template": None}
 TICKET_CONFIG = {"ticket_category_id": None, "log_channel_id": None, "authorized_roles": set()}
 
-# -------------------- Bot Ready --------------------
+# ----- READY -----
 @bot.event
 async def on_ready():
     for guild in bot.guilds:
         await tree.sync(guild=discord.Object(id=guild.id))
-        print(f"✅ Slash commands synced in: {guild.name} ({guild.id})")
+        print(f"✅ Synced commands in: {guild.name} ({guild.id})")
     print(f"🤖 Logged in as {bot.user}")
 
-# -------------------- Welcome System --------------------
-@tree.command(name="setwelcome", description="Set welcome channel and message.")
-@app_commands.describe(channel="Where to send welcome", message="Message: {member}, {servername}, {count}")
+# ----- WELCOME -----
+@tree.command(name="setwelcome", description="Set welcome channel & message")
+@app_commands.describe(channel="Welcome channel", message="Message (use {member}, {servername}, {count})")
 async def setwelcome(interaction: discord.Interaction, channel: discord.TextChannel, message: str):
     WELCOME_CONFIG["channel_id"] = channel.id
     WELCOME_CONFIG["message_template"] = message
-    await interaction.response.send_message(f"✅ Welcome message set for {channel.mention}", ephemeral=True)
+    await interaction.response.send_message(f"✅ Welcome set to {channel.mention}", ephemeral=True)
 
 @bot.event
 async def on_member_join(member):
-    cid = WELCOME_CONFIG.get("channel_id")
+    channel_id = WELCOME_CONFIG.get("channel_id")
     msg_template = WELCOME_CONFIG.get("message_template")
-    if not cid or not msg_template:
+    if not channel_id or not msg_template:
         return
 
-    channel = member.guild.get_channel(cid)
+    channel = member.guild.get_channel(channel_id)
     if channel:
-        msg = msg_template.replace("{member}", member.mention)
-        msg = msg.replace("{count}", str(len(member.guild.members)))
-        msg = msg.replace("{servername}", member.guild.name)
-
+        msg = msg_template.replace("{member}", member.mention)\
+                          .replace("{servername}", member.guild.name)\
+                          .replace("{count}", str(len(member.guild.members)))
         embed = discord.Embed(description=msg, color=discord.Color.green())
         if member.guild.icon:
             embed.set_thumbnail(url=member.guild.icon.url)
         await channel.send(embed=embed)
 
-# -------------------- Ticket Setup --------------------
-@tree.command(name="setup", description="Show ticket setup help")
+# ----- TICKETS -----
+@tree.command(name="setup", description="Show ticket setup options")
 @app_commands.checks.has_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):
-    embed = discord.Embed(title="🛠 Ticket Bot Setup", color=discord.Color.orange())
-    embed.add_field(name="/setcategory", value="Select category to hold ticket channels", inline=False)
-    embed.add_field(name="/setlogs", value="Select channel for logs", inline=False)
-    embed.add_field(name="/sendpanel", value="Send ticket creation button", inline=False)
+    embed = discord.Embed(title="🎫 Ticket Setup", color=discord.Color.orange())
+    embed.add_field(name="/setcategory", value="Set ticket category", inline=False)
+    embed.add_field(name="/setlogs", value="Set log channel", inline=False)
+    embed.add_field(name="/sendpanel", value="Send ticket button", inline=False)
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-@tree.command(name="setcategory", description="Set category for ticket channels")
+@tree.command(name="setcategory", description="Set category for tickets")
 @app_commands.checks.has_permissions(administrator=True)
 async def setcategory(interaction: discord.Interaction):
     class CategorySelect(ChannelSelect):
@@ -83,11 +81,11 @@ async def setcategory(interaction: discord.Interaction):
 
         async def callback(self, i: discord.Interaction):
             TICKET_CONFIG["ticket_category_id"] = self.values[0].id
-            await i.response.send_message(f"✅ Ticket category set to `{self.values[0].name}`", ephemeral=True)
+            await i.response.send_message(f"📁 Ticket category set: {self.values[0].name}", ephemeral=True)
 
-    await interaction.response.send_message("📂 Choose ticket category:", view=View().add_item(CategorySelect()), ephemeral=True)
+    await interaction.response.send_message("📂 Choose category:", view=View().add_item(CategorySelect()), ephemeral=True)
 
-@tree.command(name="setlogs", description="Set log channel")
+@tree.command(name="setlogs", description="Set ticket log channel")
 @app_commands.checks.has_permissions(administrator=True)
 async def setlogs(interaction: discord.Interaction):
     class LogSelect(ChannelSelect):
@@ -100,7 +98,6 @@ async def setlogs(interaction: discord.Interaction):
 
     await interaction.response.send_message("🪵 Choose log channel:", view=View().add_item(LogSelect()), ephemeral=True)
 
-# -------------------- Ticket Panel --------------------
 class TicketView(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -129,41 +126,45 @@ class TicketView(View):
             overwrites=overwrites
         )
 
-        await channel.send(f"{user.mention} 🎫 Your support ticket has been created.")
-        await interaction.response.send_message(f"✅ Ticket created: {channel.mention}", ephemeral=True)
+        await channel.send(f"{user.mention} 🎫 Your ticket has been created.")
+        await interaction.response.send_message(f"✅ Ticket: {channel.mention}", ephemeral=True)
 
-        log = guild.get_channel(TICKET_CONFIG.get("log_channel_id"))
+        log = guild.get_channel(TICKET_CONFIG["log_channel_id"])
         if log:
-            await log.send(f"📨 New ticket by {user.mention}: {channel.mention}")
+            await log.send(f"📨 Ticket by {user.mention}: {channel.mention}")
 
-@tree.command(name="sendpanel", description="Send the ticket panel")
+@tree.command(name="sendpanel", description="Send ticket creation panel")
 @app_commands.checks.has_permissions(administrator=True)
 async def sendpanel(interaction: discord.Interaction):
-    embed = discord.Embed(title="📩 Need Help?", description="Click the button below to open a support ticket.", color=discord.Color.blurple())
+    embed = discord.Embed(title="📩 Need Help?", description="Click the button to open a ticket.", color=discord.Color.blurple())
     await interaction.channel.send(embed=embed, view=TicketView())
-    await interaction.response.send_message("✅ Ticket panel sent!", ephemeral=True)
+    await interaction.response.send_message("✅ Panel sent.", ephemeral=True)
 
-@tree.command(name="close", description="Close this ticket channel")
+@tree.command(name="close", description="Close this ticket")
 async def close(interaction: discord.Interaction):
     if TICKET_CONFIG["ticket_category_id"] != interaction.channel.category_id:
         return await interaction.response.send_message("❌ Not a ticket channel.", ephemeral=True)
 
+    user = interaction.user
     allowed = (
-        interaction.channel.name.endswith(interaction.user.name.lower())
-        or any(role.id in TICKET_CONFIG["authorized_roles"] for role in interaction.user.roles)
-        or interaction.user.guild_permissions.administrator
+        interaction.channel.name.endswith(user.name.lower()) or
+        any(role.id in TICKET_CONFIG["authorized_roles"] for role in user.roles) or
+        user.guild_permissions.administrator
     )
 
     if not allowed:
         return await interaction.response.send_message("🚫 You can't close this ticket.", ephemeral=True)
 
-    await interaction.response.send_message("🛑 Closing ticket in 5 seconds...")
+    await interaction.response.send_message("🛑 Closing in 5 seconds...")
     await asyncio.sleep(5)
     await interaction.channel.delete()
 
     log = interaction.guild.get_channel(TICKET_CONFIG.get("log_channel_id"))
     if log:
-        await log.send(f"🔒 Ticket closed by {interaction.user.mention}: `{interaction.channel.name}`")
+        await log.send(f"🔒 Ticket closed by {user.mention}: `{interaction.channel.name}`")
 
-# -------------------- Run --------------------
-bot.run(TOKEN)
+# ----- RUN -----
+if not TOKEN:
+    print("❌ DISCORD_BOT_TOKEN not found.")
+else:
+    bot.run(TOKEN)
