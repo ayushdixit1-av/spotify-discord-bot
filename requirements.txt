@@ -1,4 +1,4 @@
-discord.py[voice]
-spotipy
+discord.py
+python-dotenv
 yt-dlp
-# imageio-ffmpeg # Removed imageio-ffmpeg
+spotipy
